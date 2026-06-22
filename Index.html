@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 토익 기초 과정 - 일주일치 날짜별 단어장 (하루 50개)</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        /* 주차/날짜 선택 바 */
+        .day-selector { display: flex; gap: 8px; margin-bottom: 15px; background: #2c3e50; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-wrap: wrap; justify-content: center; }
+        .day-btn { padding: 8px 14px; font-size: 13px; border: none; background: #34495e; color: #fff; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.2s; }
+        .day-btn.active { background-color: #e67e22; color: white; }
+
+        /* 기능 탭 메뉴 스타일 */
+        .nav-tabs { display: flex; margin-bottom: 20px; background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .tab-btn { padding: 10px 12px; font-size: 14px; border: none; background: none; cursor: pointer; border-radius: 6px; font-weight: bold; color: #666; transition: 0.3s; }
+        .tab-btn.active { background-color: #3498db; color: white; }
+
+        .container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 540px; text-align: center; display: none; box-sizing: border-box; }
+        .container.active { display: block; }
+        
+        h2 { color: #333; margin-top: 0; margin-bottom: 5px; }
+        .day-title { color: #e67e22; font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .word-count-info { color: #7f8c8d; font-size: 13px; margin-bottom: 15px; }
+        .progress { color: #888; font-size: 14px; margin-bottom: 15px; }
+        .question-box { font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px 0; padding: 15px; background-color: #eef2f3; border-radius: 8px; min-height: 45px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .q-hint { font-size: 14px; color: #7f8c8d; margin-top: 5px; font-weight: normal; }
+        
+        /* 주관식 입력 및 버튼 */
+        input[type="text"] { width: 85%; padding: 12px; font-size: 18px; border: 2px solid #ddd; border-radius: 6px; outline: none; transition: 0.3s; text-align: center; }
+        input[type="text"]:focus { border-color: #3498db; }
+        button { margin-top: 15px; padding: 12px 30px; font-size: 16px; background-color: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #2980b9; }
+        .feedback { font-size: 18px; font-weight: bold; margin-top: 15px; min-height: 25px; }
+        
+        /* 품사 버튼 스타일 */
+        .pos-btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .pos-btn { padding: 15px; font-size: 15px; font-weight: bold; border: 2px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer; transition: 0.2s; }
+        .pos-btn:hover { background: #f0f4f8; border-color: #3498db; }
+
+        /* 단어장 리스트 스타일 */
+        .voca-list { text-align: left; max-height: 420px; overflow-y: auto; padding: 5px; }
+        .voca-group { margin-bottom: 15px; }
+        .voca-group h4 { color: #2c3e50; margin: 15px 0 8px 0; border-left: 4px solid #e67e22; padding-left: 8px; font-size: 16px; }
+        .voca-item { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .voca-item .word-en { font-weight: bold; color: #2980b9; }
+
+        /* 오답노트 디자인 */
+        .wrong-item { text-align: left; background: #fff; border-left: 5px solid #e74c3c; padding: 12px; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .empty-msg { color: #aaa; font-style: italic; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="day-selector">
+    <button class="day-btn active" onclick="switchDay(1)">Day 1</button>
+    <button class="day-btn" onclick="switchDay(2)">Day 2</button>
+    <button class="day-btn" onclick="switchDay(3)">Day 3</button>
+    <button class="day-btn" onclick="switchDay(4)">Day 4</button>
+    <button class="day-btn" onclick="switchDay(5)">Day 5</button>
+    <button class="day-btn" onclick="switchDay(6)">Day 6</button>
+    <button class="day-btn" onclick="switchDay(7)">Day 7</button>
+</div>
+
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('word-book')">📖 단어장</button>
+    <button class="tab-btn" onclick="switchTab('word-quiz')">🔤 믹스 암기테스트</button>
+    <button class="tab-btn" onclick="switchTab('pos-quiz')">🧠 품사 테스트</button>
+    <button class="tab-btn" onclick="switchTab('wrong-notebook')">📕 오답 노트 (<span id="wrong-count">0</span>)</button>
+</div>
+
+<div id="word-book" class="container active">
+    <h2>📖 영단어장</h2>
+    <div class="day-title" id="wb-day-label">Day 1</div>
+    <div class="word-count-info">(오늘 학습할 필수 단어: <span id="wb-count">50</span>개)</div>
+    <div class="voca-list" id="voca-list-view"></div>
+</div>
+
+<div id="word-quiz" class="container">
+    <h2>📝 믹스 암기 테스트</h2>
+    <div class="day-title" id="wq-day-label">Day 1</div>
+    <div class="progress" id="wq-progress">문제 1 / 50</div>
+    <div class="question-box">
+        <div id="wq-question">질문</div>
+        <div class="q-hint" id="wq-hint">형태</div>
+    </div>
+    <input type="text" id="wq-answer" placeholder="정답을 입력하고 엔터를 누르세요" autocomplete="off" onkeypress="if(event.key==='Enter') checkWordAnswer()">
+    <br>
+    <button onclick="checkWordAnswer()">정답 확인</button>
+    <div class="feedback" id="wq-feedback"></div>
+</div>
+
+<div id="pos-quiz" class="container">
+    <h2>🧠 품사 맞추기 테스트</h2>
+    <div class="day-title" id="pq-day-label">Day 1</div>
+    <div class="progress" id="pq-progress">문제 1 / 50</div>
+    <div class="question-box" id="pq-question">단어 (뜻)</div>
+    
+    <div class="pos-btn-container">
+        <button class="pos-btn" onclick="checkPosAnswer('명사')">명사 (사물/이름)</button>
+        <button class="pos-btn" onclick="checkPosAnswer('동사')">동사 (행동/움직임)</button>
+        <button class="pos-btn" onclick="checkPosAnswer('형용사')">형용사 (~한/상태)</button>
+        <button class="pos-btn" onclick="checkPosAnswer('부사')">부사 (~하게/설명)</button>
+    </div>
+    <div class="feedback" id="pq-feedback"></div>
+</div>
+
+<div id="wrong-notebook" class="container">
+    <h2>📕 나만의 오답 노트</h2>
+    <div class="day-title" id="wn-day-label">Day 1</div>
+    <button onclick="clearWrongNotes()" style="background-color:#e74c3c; padding:8px 15px; font-size:13px; margin-bottom:15px; margin-top:0;">현재 Day 오답 초기화</button>
+    <div id="wrong-list-container"></div>
+</div>
+
+<script>
+    // Day 1 ~ Day 7 각각 완벽하게 50개씩 채운 진짜 토익 기초 단어 데이터베이스 (총 350개)
+    const weeklyDB = {
+        1: {
+            // 명사 (15개)
+            "people": ["사람들", "명사"], "time": ["시간", "명사"], "work": ["일, 업무", "명사"], "office": ["사무실", "명사"], "company": ["회사", "명사"], "job": ["직업, 일", "명사"], "business": ["사업, 비즈니스", "명사"], "meeting": ["회의", "명사"], "money": ["돈", "명사"], "price": ["가격", "명사"], "product": ["제품", "명사"], "service": ["서비스", "명사"], "customer": ["고객", "명사"], "store": ["상점, 가게", "명사"], "information": ["정보", "명사"],
+            // 동사 (15개)
+            "go": ["가다", "동사"], "come": ["오다", "동사"], "do": ["하다", "동사"], "make": ["만들다", "동사"], "get": ["얻다, 받다", "동사"], "have": ["가지고 있다", "동사"], "see": ["보다", "동사"], "know": ["알다", "동사"], "think": ["생각하다", "동사"], "want": ["원하다", "동사"], "provide": ["제공하다", "동사"], "increase": ["증가하다", "동사"], "decrease": ["감소하다", "동사"], "produce": ["생산하다", "동사"], "manage": ["관리하다", "동사"],
+            // 형용사 (10개)
+            "good": ["좋은", "형용사"], "new": ["새로운", "형용사"], "important": ["중요한", "형용사"], "available": ["이용 가능한", "형용사"], "financial": ["금융의", "형용사"], "successful": ["성공적인", "형용사"], "official": ["공식적인", "형용사"], "recent": ["최근의", "형용사"], "efficient": ["효율적인", "형용사"], "professional": ["전문적인", "형용사"],
+            // 부사 (10개)
+            "very": ["매우", "부사"], "well": ["잘", "부사"], "already": ["이미, 벌써", "부사"], "recently": ["최근에", "부사"], "currently": ["현재", "부사"], "successfully": ["성공적으로", "부사"], "efficiently": ["효율적으로", "부사"], "professionally": ["전문적으로", "부사"], "clearly": ["명확하게", "부사"], "carefully": ["조심스럽게", "부사"]
+        },
+        2: {
+            // 명사 (15개)
+            "staff": ["직원", "명사"], "manager": ["관리자, 매니저", "명사"], "report": ["보고서", "명사"], "project": ["프로젝트", "명사"], "plan": ["계획", "명사"], "schedule": ["일정, 스케줄", "명사"], "result": ["결과", "명사"], "sale": ["판매", "명사"], "market": ["시장", "명사"], "event": ["행사, 이벤트", "명사"], "ticket": ["표, 티켓", "명사"], "letter": ["편지", "명사"], "item": ["물품, 항목", "명사"], "cost": ["비용", "명사"], "client": ["의뢰인, 고객", "명사"],
+            // 동사 (15개)
+            "start": ["시작하다", "동사"], "finish": ["끝내다", "동사"], "open": ["열다", "동사"], "close": ["닫다", "동사"], "read": ["읽다", "동사"], "write": ["쓰다", "동사"], "hear": ["듣다", "동사"], "speak": ["말하다", "동사"], "use": ["사용하다", "동사"], "find": ["찾다", "동사"], "lose": ["잃다", "동사"], "give": ["주다", "동사"], "take": ["받다, 취하다", "동사"], "help": ["돕다", "동사"], "call": ["전화하다, 부르다", "동사"],
+            // 형용사 (10개)
+            "happy": ["행복한", "형용사"], "sad": ["슬픈", "형용사"], "hot": ["뜨거운", "형용사"], "cold": ["차가운", "형용사"], "easy": ["쉬운", "형용사"], "hard": ["어려운", "형용사"], "early": ["이른", "형용사"], "late": ["늦은", "형용사"], "clean": ["깨끗한", "형용사"], "ready": ["준비된", "형용사"],
+            // 부사 (10개)
+            "quickly": ["빨리", "부사"], "suddenly": ["갑자기", "부사"], "maybe": ["아마도", "부사"], "here": ["여기에", "부사"], "there": ["저기에", "부사"], "first": ["첫째로", "부사"], "last": ["마지막으로", "부사"], "always": ["항상", "부사"], "never": ["결코 ~않다", "부사"], "often": ["자주, 흔히", "부사"]
+        },
+        3: {
+            // 명사 (15개)
+            "agreement": ["계약, 합의", "명사"], "policy": ["정책", "명사"], "document": ["서류, 문서", "명사"], "equipment": ["장비", "명사"], "facility": ["시설", "명사"], "employee": ["직원", "명사"], "employer": ["고용주", "명사"], "department": ["부서", "명사"], "budget": ["예산", "명사"], "profit": ["이익", "명사"], "contract": ["계약서", "명사"], "signature": ["서명", "명사"], "request": ["요청", "명사"], "permission": ["허가", "명사"], "delivery": ["배달, 배송", "명사"],
+            // 동사 (15개)
+            "accept": ["수락하다", "동사"], "refuse": ["거절하다", "동사"], "agree": ["동의하다", "동사"], "disagree": ["반대하다", "동사"], "confirm": ["확인하다", "동사"], "cancel": ["취소하다", "동사"], "submit": ["제출하다", "동사"], "receive": ["받다", "동사"], "send": ["보내다", "동사"], "approve": ["승인하다", "동사"], "review": ["검토하다", "동사"], "discuss": ["논의하다", "동사"], "explain": ["설명하다", "동사"], "recommend": ["추천하다", "동사"], "suggest": ["제안하다", "동사"],
+            // 형용사 (10개)
+            "annual": ["연례의, 매년의", "형용사"], "monthly": ["매달의", "형용사"], "weekly": ["매주의", "형용사"], "daily": ["매일의", "형용사"], "local": ["지역의", "형용사"], "national": ["국가의", "형용사"], "international": ["국제적인", "형용사"], "general": ["일반적인", "형용사"], "specific": ["구체적인", "형용사"], "main": ["주요한", "형용사"],
+            // 부사 (10개)
+            "annually": ["매년", "부사"], "monthly_adv": ["매달", "부사"], "weekly_adv": ["매주", "부사"], "daily_adv": ["매일", "부사"], "locally": ["국지적으로", "부사"], "generally": ["일반적으로", "부사"], "specifically": ["구체적으로", "부사"], "mainly": ["주로", "부사"], "especially": ["특히", "부사"], "particularly": ["특히, 상세히", "부사"]
+        },
+        4: {
+            // 명사 (15개)
+            "application": ["지원(서)", "명사"], "candidate": ["후보자, 지원자", "명사"], "interview": ["면접", "명사"], "career": ["경력", "명사"], "experience": ["경험", "명사"], "ability": ["능력", "명사"], "requirement": ["자격 요건", "명사"], "position": ["직책, 위치", "명사"], "salary": ["급여", "명사"], "benefit": ["혜택, 복지", "명사"], "insurance": ["보험", "명사"], "tax": ["세금", "명사"], "fee": ["요금, 수수료", "명사"], "payment": ["지불, 결제", "명사"], "receipt": ["영수증", "명사"],
+            // 동사 (15개)
+            "apply": ["지원하다, 적용하다", "동사"], "hire": ["고용하다", "동사"], "fire": ["해고하다", "동사"], "retire": ["퇴직하다", "동사"], "train": ["교육하다, 훈련하다", "동사"], "work_v": ["일하다", "동사"], "pay": ["지불하다", "동사"], "earn": ["벌다", "동사"], "spend": ["소비하다", "동사"], "save": ["절약하다, 저장하다", "동사"], "charge": ["청구하다", "동사"], "afford": ["여유가 되다", "동사"], "cost_v": ["비용이 들다", "동사"], "lend": ["빌려주다", "동사"], "borrow": ["빌리다", "동사"],
+            // 형용사 (10개)
+            "qualified": ["자격이 있는", "형용사"], "experienced": ["경험이 있는", "형용사"], "fulltime": ["전업의, 상근의", "형용사"], "parttime": ["시간제의", "형용사"], "temporary": ["임시의", "형용사"], "permanent": ["영구적인", "형용사"], "expensive": ["비싼", "형용사"], "cheap": ["저렴한", "형용사"], "affordable": ["가격이 알맞은", "형용사"], "valuable": ["가치 있는", "형용사"],
+            // 부사 (10개)
+            "temporarily": ["임시로", "부사"], "permanently": ["영구히", "부사"], "highly": ["매우, 높이", "부사"], "poorly": ["형편없이", "부사"], "fully": ["완전히", "부사"], "partially": ["부분적으로", "부사"], "reasonably": ["합리적으로", "부사"], "greatly": ["대단히", "부사"], "slightly": ["약간", "부사"], "considerably": ["상당히", "부사"]
+        },
+        5: {
+            // 명사 (15개)
+            "advertisement": ["광고", "명사"], "promotion": ["홍보, 승진", "명사"], "campaign": ["캠페인", "명사"], "strategy": ["전략", "명사"], "goal": ["목표", "명사"], "target": ["대상, 목표", "명사"], "success": ["성공", "명사"], "failure": ["실패", "명사"], "growth": ["성장", "명사"], "development": ["개발, 발전", "명사"], "industry": ["산업", "명사"], "factory": ["공장", "명사"], "material": ["재료, 자료", "명사"], "goods": ["상품", "명사"], "inventory": ["재고", "명사"],
+            // 동사 (15개)
+            "advertise": ["광고하다", "동사"], "promote": ["홍보하다, 승진시키다", "동사"], "achieve": ["달성하다", "동사"], "fail": ["실패하다", "동사"], "grow": ["성장하다", "동사"], "develop": ["개발하다", "동사"], "improve": ["개선하다", "동사"], "increase_v": ["증가시키다", "동사"], "reduce": ["줄이다", "동사"], "expand": ["확장하다", "동사"], "invent": ["발명하다", "동사"], "produce_v": ["생산하다", "동사"], "manufacture": ["제조하다", "동사"], "supply": ["공급하다", "동사"], "order": ["주문하다", "동사"],
+            // 형용사 (10개)
+            "successful_adj": ["성공적인", "형용사"], "effective": ["효과적인", "형용사"], "creative": ["창의적인", "형용사"], "industrial": ["산업의", "형용사"], "raw": ["날것의, 가공 안 된", "형용사"], "commercial": ["상업적인", "형용사"], "competitive": ["경쟁력 있는", "형용사"], "popular": ["인기 있는", "형용사"], "famous": ["유명한", "형용사"], "excellent": ["훌륭한", "형용사"],
+            // 부사 (10개)
+            "effectively": ["효과적으로", "부사"], "creatively": ["창의적으로", "부사"], "commercially": ["상업적으로", "부사"], "competitively": ["경쟁적으로", "부사"], "popularly": ["일반적으로, 인기 있게", "부사"], "excellently": ["훌륭하게", "부사"], "rapidly": ["급격하게", "부사"], "slowly": ["천천히", "부사"], "steadily": ["꾸준히", "부사"], "gradually": ["점진적으로", "부사"]
+        },
+        6: {
+            // 명사 (15개)
+            "transportation": ["교통, 운송", "명사"], "vehicle": ["차량, 탈것", "명사"], "passenger": ["승객", "명사"], "driver": ["운전자", "명사"], "flight": ["비행, 항공편", "명사"], "airport": ["공항", "명사"], "station": ["역, 정류장", "명사"], "luggage": ["짐, 수하물", "명사"], "baggage": ["짐, 수하물", "명사"], "reservation": ["예약", "명사"], "hotel": ["호텔", "명사"], "room": ["방, 객실", "명사"], "map": ["지도", "명사"], "direction": ["방향, 지시", "명사"], "delay": ["지연, 미룸", "명사"],
+            // 동사 (15개)
+            "transport": ["운송하다", "동사"], "drive": ["운전하다", "동사"], "fly": ["날다, 비행기 타고 가다", "동사"], "travel": ["여행하다", "동사"], "book": ["예약하다", "동사"], "reserve": ["예약하다", "동사"], "cancel_v": ["취소하다", "동사"], "stay": ["머무르다", "동사"], "arrive": ["도착하다", "동사"], "depart": ["출발하다", "동사"], "leave": ["떠나다", "동사"], "return": ["돌아가다", "동사"], "delay_v": ["지연시키다", "동사"], "postpone": ["연기하다", "동사"], "miss": ["놓치다", "동사"],
+            // 형용사 (10개)
+            "public": ["공공의", "형용사"], "private": ["사적인, 개인의", "형용사"], "convenient": ["편리한", "형용사"], "inconvenient": ["불편한", "형용사"], "safe": ["안전한", "형용사"], "dangerous": ["위험한", "형용사"], "crowded": ["붐비는", "형용사"], "empty": ["비어 있는", "형용사"], "direct": ["직접적인, 직행의", "형용사"], "indirect": ["간접적인", "형용사"],
+            // 부사 (10개)
+            "publicly": ["공공연하게", "부사"], "privately": ["사적으로", "부사"], "conveniently": ["편리하게", "부사"], "safely": ["안전하게", "부사"], "dangerously": ["위험하게", "부사"], "directly": ["직접, 곧바로", "부사"], "indirectly": ["간접적으로", "부사"], "aboard": ["배나 비행기에 타고", "부사"], "abroad": ["해외로", "부사"], "locally_6": ["지방에, 그 지역에", "부사"]
+        },
+        7: {
+            // 명사 (15개)
+            "communication": ["소통, 통신", "명사"], "network": ["네트워크, 망", "명사"], "computer": ["컴퓨터", "명사"], "software": ["소프트웨어", "명사"], "system": ["시스템, 체계", "명사"], "device": ["장치, 기기", "명사"], "screen": ["화면", "명사"], "file": ["파일", "명사"], "data": ["자료, 데이터", "명사"], "internet": ["인터넷", "명사"], "website": ["웹사이트", "명사"], "email": ["이메일", "명사"], "message": ["메시지", "명사"], "call_n": ["통화, 전화", "명사"], "access": ["접근, 이용 권한", "명사"],
+            // 동사 (15개)
+            "communicate": ["소통하다", "동사"], "connect": ["연결하다", "동사"], "disconnect": ["연결을 끊다", "동사"], "install": ["설치하다", "동사"], "update": ["업데이트하다", "동사"], "download": ["다운로드하다", "동사"], "upload": ["업로드하다", "동사"], "save_v7": ["저장하다", "동사"], "delete": ["삭제하다", "동사"], "send_v7": ["전송하다", "동사"], "receive_v7": ["수신하다", "동사"], "access_v": ["접근하다", "동사"], "search": ["검색하다", "동사"], "print": ["출력하다, 인쇄하다", "동사"], "fix": ["고치다, 고정하다", "동사"],
+            // 형용사 (10개)
+            "digital": ["디지털의", "형용사"], "online": ["온라인의", "형용사"], "offline": ["오프라인의", "형용사"], "latest": ["최신의", "형용사"], "old": ["오래된", "형용사"], "fast": ["빠른", "형용사"], "slow": ["느린", "형용사"], "secure": ["안전한, 보안이 철저한", "형용사"], "insecure": ["불안정한, 보안이 취약한", "형용사"], "technical": ["기술적인", "형용사"],
+            // 부사 (10개)
+            "digitally": ["디지털 방식으로", "부사"], "online_adv": ["온라인으로", "부사"], "offline_adv": ["오프라인으로", "부사"], "securely": ["안전하게, 단단히", "부사"], "technically": ["기술적으로", "부사"], "automatically": ["자동으로", "부사"], "manually": ["수동으로", "부사"], "instantly": ["즉각적으로", "부사"], "constantly": ["끊임없이", "부사"], "frequently": ["빈번하게, 자주", "부사"]
+        }
+    };
+
+    let currentDay = 1;
+    let currentTab = 'word-book';
+    
+    let wqList = [];
+    let pqList = [];
+    let wqIdx = 0, wqScore = 0;
+    let pqIdx = 0, pqScore = 0;
+    
+    // Day별 오답노트 보관소
+    let weeklyWrongNotes = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {} };
+
+    window.onload = function() {
+        loadDayData();
+    };
+
+    function shuffle(array) {
+        array.sort(() => Math.random() - 0.5);
+    }
+
+    // --- Day 변경 함수 ---
+    function switchDay(dayNum) {
+        currentDay = dayNum;
+        
+        document.querySelectorAll('.day-btn').forEach((b, idx) => {
+            if(idx === dayNum - 1) b.classList.add('active');
+            else b.classList.remove('active');
+        });
+
+        document.getElementById("wb-day-label").innerText = `Day ${dayNum}`;
+        document.getElementById("wq-day-label").innerText = `Day ${dayNum}`;
+        document.getElementById("pq-day-label").innerText = `Day ${dayNum}`;
+        document.getElementById("wn-day-label").innerText = `Day ${dayNum}`;
+
+        loadDayData();
+    }
+
+    // --- Tab 변경 함수 ---
+    function switchTab(tabId) {
+        currentTab = tabId;
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        
+        if(tabId === 'wrong-notebook') renderWrongNotes();
+    }
+
+    // --- 데이터 로드 및 초기화 ---
+    function loadDayData() {
+        const dayData = weeklyDB[currentDay];
+        const totalWords = Object.keys(dayData).length;
+        
+        // 상단 개수 표기
+        document.getElementById("wb-count").innerText = totalWords;
+
+        // 1. 단어장 업데이트
+        renderWordBook(dayData);
+        
+        // 2. 믹스 암기 테스트 세팅
+        wqList = [];
+        Object.keys(dayData).forEach(word => {
+            const type = Math.floor(Math.random() * 2); // 0: 영->한, 1: 한->영
+            wqList.push({ word: word, type: type });
+        });
+        shuffle(wqList);
+        wqIdx = 0; wqScore = 0;
+        showWordQuestion();
+
+        // 3. 품사 테스트 데이터 세팅
+        pqList = Object.keys(dayData);
+        shuffle(pqList);
+        pqIdx = 0; pqScore = 0;
+        showPosQuestion();
+
+        // 4. 오답 개수 배지 업데이트
+        updateWrongCountBadge();
+        if(currentTab === 'wrong-notebook') renderWrongNotes();
+    }
+
+    // --- 단어장 UI 그리기 ---
+    function renderWordBook(dayData) {
+        const view = document.getElementById("voca-list-view");
+        view.innerHTML = "";
+        const categories = ["명사", "동사", "형용사", "부사"];
+        
+        categories.forEach(cat => {
+            const group = document.createElement("div");
+            group.className = "voca-group";
+            let hasItem = false;
+            
+            let html = `<h4>📌 ${cat}</h4>`;
+            Object.keys(dayData).forEach(word => {
+                if(dayData[word][1] === cat) {
+                    // 내부 시스템 식별용 접미사 제거 가공 처리 (ex: work_v -> work)
+                    const cleanWord = word.split('_')[0];
+                    html += `<div class="voca-item"><span class="word-en">${cleanWord}</span><span class="word-ko">${dayData[word][0]}</span></div>`;
+                    hasItem = true;
+                }
+            });
+            
+            if(hasItem) {
+                group.innerHTML = html;
+                view.appendChild(group);
+            }
+        });
+    }
+
+    // --- 믹스 암기 테스트 로직 ---
+    function showWordQuestion() {
+        const dayData = weeklyDB[currentDay];
+        if(wqIdx < wqList.length) {
+            document.getElementById("wq-progress").innerText = `문제 ${wqIdx + 1} / ${wqList.length}`;
+            const current = wqList[wqIdx];
+            const cleanWord = current.word.split('_')[0];
+            
+            if(current.type === 0) {
+                document.getElementById("wq-question").innerText = cleanWord;
+                document.getElementById("wq-hint").innerText = "[뜻을 한국어로 입력하세요]";
+            } else {
+                document.getElementById("wq-question").innerText = dayData[current.word][0];
+                document.getElementById("wq-hint").innerText = "[영단어 스펠링을 입력하세요]";
+            }
+            document.getElementById("wq-answer").value = "";
+            document.getElementById("wq-feedback").innerText = "";
+            document.getElementById("wq-answer").focus();
+        } else {
+            document.getElementById("wq-question").innerText = "🎉 해당 Day 암기 완료!";
+            document.getElementById("wq-hint").innerText = "";
+            document.getElementById("wq-feedback").innerHTML = `결과: ${wqList.length}문제 중 ${wqScore}개 정답!<br><button onclick="switchDay(${currentDay})">재도전</button>`;
+        }
+    }
+
+    function checkWordAnswer() {
+        const dayData = weeklyDB[currentDay];
+        const userAns = document.getElementById("wq-answer").value.trim().toLowerCase();
+        if(userAns === "") return;
+
+        const current = wqList[wqIdx];
+        const cleanWord = current.word.split('_')[0].toLowerCase();
+        let isCorrect = false;
+        let correctText = "";
+
+        if(current.type === 0) {
+            const cleanCorrect = dayData[current.word][0].replace(/\s+/g, '').toLowerCase();
+            const cleanUser = userAns.replace(/\s+/g, '').toLowerCase();
+            if(cleanCorrect.includes(cleanUser) || cleanUser.includes(cleanCorrect)) isCorrect = true;
+            correctText = dayData[current.word][0];
+        } else {
+            if(userAns === cleanWord) isCorrect = true;
+            correctText = cleanWord;
+        }
+
+        if(isCorrect) {
+            wqScore++;
+            document.getElementById("wq-feedback").innerText = "⭕ 정답입니다!";
+            document.getElementById("wq-feedback").style.color = "#2ecc71";
+        } else {
+            document.getElementById("wq-feedback").innerText = `❌ 오답! 정답: ${correctText}`;
+            document.getElementById("wq-feedback").style.color = "#e74c3c";
+            addWrongNote(current.word);
+        }
+        wqIdx++;
+        setTimeout(showWordQuestion, 1200);
+    }
+
+    // --- 품사 테스트 로직 ---
+    function showPosQuestion() {
+        const dayData = weeklyDB[currentDay];
+        if(pqIdx < pqList.length) {
+            document.getElementById("pq-progress").innerText = `문제 ${pqIdx + 1} / ${pqList.length}`;
+            const target = pqList[pqIdx];
+            const cleanWord = target.split('_')[0];
+            document.getElementById("pq-question").innerText = `${cleanWord} (${dayData[target][0]})`;
+            document.getElementById("pq-feedback").innerText = "";
+        } else {
+            document.getElementById("pq-question").innerText = "🎉 해당 Day 품사 완료!";
+            document.getElementById("pq-feedback").innerHTML = `결과: ${pqList.length}문제 중 ${pqScore}개 명중!<br><button onclick="switchDay(${currentDay})">재도전</button>`;
+        }
+    }
+
+    function checkPosAnswer(userPos) {
+        if(pqIdx >= pqList.length) return;
+        const dayData = weeklyDB[currentDay];
+        const target = pqList[pqIdx];
+        const correctPos = dayData[target][1];
+
+        if(userPos === correctPos) {
+            pqScore++;
+            document.getElementById("pq-feedback").innerText = `⭕ 정답! (${correctPos})`;
+            document.getElementById("pq-feedback").style.color = "#2ecc71";
+        } else {
+            document.getElementById("pq-feedback").innerText = `❌ 오답! 정답은 [${correctPos}]`;
+            document.getElementById("pq-feedback").style.color = "#e74c3c";
+            addWrongNote(target);
+        }
+        pqIdx++;
+        setTimeout(showPosQuestion, 1200);
+    }
+
+    // --- 오답노트 시스템 ---
+    function addWrongNote(word) {
+        if(!weeklyWrongNotes[currentDay][word]) {
+            weeklyWrongNotes[currentDay][word] = true;
+            updateWrongCountBadge();
+        }
+    }
+
+    function updateWrongCountBadge() {
+        const count = Object.keys(weeklyWrongNotes[currentDay]).length;
+        document.getElementById("wrong-count").innerText = count;
+    }
+
+    function renderWrongNotes() {
+        const container = document.getElementById("wrong-list-container");
+        container.innerHTML = "";
+        const dayData = weeklyDB[currentDay];
+        const keys = Object.keys(weeklyWrongNotes[currentDay]);
+
+        if(keys.length === 0) {
+            container.innerHTML = `<p class="empty-msg">Day ${currentDay}에는 틀린 단어가 없습니다! 완벽해요 👍</p>`;
+            return;
+        }
+
+        keys.forEach(word => {
+            const cleanWord = word.split('_')[0];
+            const div = document.createElement("div");
+            div.className = "wrong-item";
+            div.innerHTML = `
+                <div style="font-size:17px; font-weight:bold; color:#2c3e50;">${cleanWord}</div>
+                <div style="color:#555; margin-top:5px; font-size:14px;">뜻: ${dayData[word][0]} | <span style="color:#9b59b6; font-weight:bold;">품사: ${dayData[word][1]}</span></div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function clearWrongNotes() {
+        weeklyWrongNotes[currentDay] = {};
+        updateWrongCountBadge();
+        renderWrongNotes();
+    }
+</script>
+
+</body>
+</html>
